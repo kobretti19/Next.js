@@ -3,26 +3,30 @@ import { notFound } from "next/navigation";
 import classes from "./page.module.css";
 import Image from "next/image";
 
+// Generate metadata for SEO
 export async function generateMetadata({ params }) {
-  const meal = getMeal(params.mealSlug);
+  const meal = await getMeal(params.mealSlug);
+
   if (!meal) {
     notFound();
   }
 
   return {
     title: meal.title,
-    description: meal.summry,
+    description: meal.summary, // ✅ fixed typo: was `summry`
   };
 }
 
-export default function MealDetailsPage({ params }) {
-  const meal = getMeal(params.mealSlug);
+// Page component
+export default async function MealDetailsPage({ params }) {
+  const meal = await getMeal(params.mealSlug); // ✅ added await
 
   if (!meal) {
     notFound();
   }
 
-  meal.instructions = meal.instructions.replace(/\n/g, "<br />");
+  // ✅ Avoid mutating original object
+  const instructionsHtml = meal.instructions.replace(/\n/g, "<br />");
 
   return (
     <>
@@ -38,11 +42,12 @@ export default function MealDetailsPage({ params }) {
           <p className={classes.summary}>{meal.summary}</p>
         </div>
       </header>
+
       <main>
         <p
           className={classes.instructions}
           dangerouslySetInnerHTML={{
-            __html: meal.instructions,
+            __html: instructionsHtml,
           }}
         ></p>
       </main>
